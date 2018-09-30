@@ -1,0 +1,17 @@
+thanks	lời cảm ơn
+window	cửa sổ
+person	người
+method	phương pháp
+contact	liên hệ	
+account	tài khoản
+problem	vấn đề
+software	phần mềm
+bussiness	doanh nghiệp
+importance	sự quan trọng
+happiness	niềm vui
+command	ra lệnh
+perfect	hoàn hảo
+translate	dịch
+transport	vận chuyển
+transform	biến đổi
+dictionary	từ điển
