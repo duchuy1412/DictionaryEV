@@ -17,10 +17,10 @@ public class DictionaryManagement {
 		return dictionaries;
 	}
 
-	//Insert new word from commandline (since v1.0)
+	// Insert from Command Line
 	public void insertFromCommandline() {
 		Scanner sc = new Scanner(System.in);
-		int numsOfWords = 5;
+		int numsOfWords;
 		String wordTarget, wordExplain;
 		System.out.println("[Import] Enter number of words: ");
 		//enter number of words
@@ -36,7 +36,7 @@ public class DictionaryManagement {
 		}
 	}
 	
-	//insert From File (since v1.1)
+	// Insert from File
 	public void insertFromFile() {
 		try {
 			Scanner inFile = new Scanner(new FileInputStream("src/dictionaries.txt"));
@@ -54,7 +54,7 @@ public class DictionaryManagement {
 		}
 	}
 	
-	
+	// Export Dictionary to file
 	public void dictionaryExportToFile() {
 		try{
 			FileWriter writer = new FileWriter("src/export.txt"); 
@@ -69,7 +69,7 @@ public class DictionaryManagement {
 		System.out.println("Xuất file thành công!");
 	}
 	
-	//look up dictionary (since v1.1)
+	//look up dictionary 
 	public void dictionaryLookup() {
 		String keyword;
 		Scanner sc = new Scanner(System.in);
@@ -89,6 +89,7 @@ public class DictionaryManagement {
 		}
 	}
 	
+	// Edit word
 	public void editWord() {
 		Scanner sc = new Scanner(System.in);
 		String deleteWord;
@@ -105,6 +106,7 @@ public class DictionaryManagement {
 		}
 	}
 	
+	// Delete Word
 	public void deleteWord() {
 		Scanner sc = new Scanner(System.in);
 		String deleteWord;
@@ -118,7 +120,7 @@ public class DictionaryManagement {
 		}
 	}
 	
-	
+	// Option 
 	public void selectOption(DictionaryCommandLine dictionaryCommandLine) {
 		int userOption;
 		Scanner sc = new Scanner(System.in);

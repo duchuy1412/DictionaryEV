@@ -8,6 +8,7 @@ import java.util.Scanner;
 public class DictionaryCommandLine {
 		private DictionaryManagement dictionaryManagement = new DictionaryManagement();
 		
+		// Menu Option 
 		private void showOption() {
 			System.out.println("\n********DICTIONARY OPTION********\n");
 			System.out.println("*\t1. Thêm từ\t\t*\n");
@@ -22,11 +23,12 @@ public class DictionaryCommandLine {
 			showOption();
 		}
 		
+		//Show 1 Word
 		public void showWord(Word word) {
 			System.out.println("\t| " + word.getWord_target() + "\t\t| " + word.getWord_explain() + "\t\t\t\t\n");
 		}
 		
-		//Show all words (since v1.0)
+		// Show All Words
 		public void showAllWords(Dictionary dictionaries) {
 			System.out.println(" No\t| English\t\t| Vietnamese\t\t\t\n");
 			int no = 0;
@@ -35,6 +37,7 @@ public class DictionaryCommandLine {
 			}
 		}
 		
+		// Dictionary Searcher
 		public void dictionarySearcher(){
 			String keyword;
 			Scanner sc = new Scanner(System.in);
@@ -56,13 +59,13 @@ public class DictionaryCommandLine {
 			}
 		}
 		
-		//Dictionary Basic (since v1.0)
+		// Dictionary Basic
 		public void dictionaryBasic() {
 			dictionaryManagement.insertFromCommandline();
 			this.showAllWords(dictionaryManagement.dictionaries);
 		}
 		
-		//Dictionary Advanced (since v1.1)
+		// Dictionary Advanced
 		public void dictionaryAdvanced() {
 			dictionaryManagement.insertFromFile();
 			this.showAllWords(dictionaryManagement.dictionaries);
