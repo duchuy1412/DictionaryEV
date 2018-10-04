@@ -16,21 +16,15 @@ public class DictionaryCommandLine {
 			System.out.println("*\t3. Xóa từ\t\t*\n");
 			System.out.println("*\t4. Tìm kiếm từ\t\t*\n");
 			System.out.println("*\t5. Xem toàn bộ từ\t*\n");
-			System.out.println("*\t6. Export to File\t*\n");
+			System.out.println("*\t6. Lưu từ điển\t\t*\n");
 			
 			System.out.println("****\tEnter your option: ");
 			dictionaryManagement.selectOption(this);
 			showOption();
 		}
 		
-		//Show 1 Word
-		public void showWord(Word word) {
-			System.out.println("\t| " + word.getWord_target() + "\t\t| " + word.getWord_explain() + "\t\t\t\t\n");
-		}
-		
 		// Show All Words
 		public void showAllWords(Dictionary dictionaries) {
-//			dictionaryManagement.sortList(dictionaryManagement.dictionaries.getData());
 			System.out.println(" No\t| English\t\t| Vietnamese\t\t\t\n");
 			int no = 0;
 			for (Word word : dictionaries.getData()) {

@@ -70,43 +70,75 @@ public class DictionaryManagement {
 		catch (IOException e) {
 			e.printStackTrace ();
 		}
-		System.out.println("Xuất file thành công!");
+		System.out.println("Lưu thành công!");
 	}
 	
-	//look up dictionary 
+	// Look up dictionary 
 	public void dictionaryLookup() {
 		String keyword;
 		Scanner sc = new Scanner(System.in);
 		System.out.println("[Search] Enter keyword you want to search: ");
 		keyword = sc.nextLine();
-		int isFinded = 0;
 		
-		for(Word word : this.getDictionaries().getData()) {
-			if(word.getWord_target().equals(keyword)) {
-				isFinded = 1;
-				System.out.println(" No\t| English\t\t| Vietnamese\t\t\t\n");
-				System.out.println("-\t| " + word.getWord_target() + "\t\t| " + word.getWord_explain() + "\t\t\t\t\n");
-			}
-		}
-		if(isFinded == 0) {
+		int indexKeyword = searchBinary(getDictionaries().getData(), keyword, 0, getDictionaries().getData().size());
+		
+		if(indexKeyword == -1) {
 			System.out.println("Không thấy từ: " + keyword);
+		}else {
+			System.out.println(" No\t| English\t\t| Vietnamese\t\t\t\n");
+			System.out.println("-\t| " + getDictionaries().getData().get(indexKeyword).getWord_target() + "\t\t| " + getDictionaries().getData().get(indexKeyword).getWord_explain() + "\t\t\t\t\n");
 		}
+	}
+	
+	// Add a Word
+	public void addAWord() {
+		int location;	
+		Scanner sc = new Scanner(System.in);
+		String wordTarget, wordExplain;
+		wordTarget = sc.nextLine();
+		wordExplain = sc.nextLine();
+		Word word = new Word(wordTarget, wordExplain);
+		
+		if(this.getDictionaries().getData().get(0).getWord_target().compareTo(wordTarget)>0)
+			location = 0;
+		else if(this.getDictionaries().getData().get(this.getDictionaries().getData().size()-1).getWord_target().compareTo(wordTarget)<0)
+			location = this.getDictionaries().getData().size();
+		else {
+			location = this.searchToAdd(this.dictionaries.getData(),wordTarget,0,this.getDictionaries().getData().size()-1);
+		}
+		if(location==-1)
+			System.out.println("Từ này đã tồn tại");
+		else
+			this.getDictionaries().getData().add(location+1, word);	// them vao sau vi tri tra ve
+		}
+			
+	// Search position to add new Words 
+	public int searchToAdd(ArrayList<Word> wordList, String str, int head, int tail) {
+		if(wordList.get((head+tail)/2).getWord_target().compareTo(str)==0 || wordList.get((head+tail)/2+1 ).getWord_target().compareTo(str)==0)	return -1;
+		if(wordList.get((head+tail)/2).getWord_target().compareTo(str)< 0 && wordList.get((head+tail)/2+1).getWord_target().compareTo(str)>0 ) return (head+tail)/2;
+		else if(wordList.get((head+tail)/2).getWord_target().compareTo(str) > 0)
+				return searchToAdd(wordList,str,head,(head+tail)/2);
+		else
+			return searchToAdd(wordList,str,(head+tail)/2,tail);
 	}
 	
 	// Edit word
 	public void editWord() {
 		Scanner sc = new Scanner(System.in);
-		String deleteWord;
+		String keyword;
 		System.out.println("Nhập từ cần sửa (English): ");
-		deleteWord = sc.nextLine();
-		for (Word word : this.getDictionaries().getData()) {
-			if(word.getWord_target().equals(deleteWord)) {
-				System.out.println("Nhập từ mới (English): ");
-				word.setWord_target(sc.nextLine());
-				System.out.println("Nhập nghĩa của từ mới (Vietnamese): ");
-				word.setWord_explain(sc.nextLine());
-				break;
-			}
+		keyword = sc.nextLine();
+		
+		int indexKeyword = searchBinary(getDictionaries().getData(), keyword, 0, getDictionaries().getData().size());
+		
+		if(indexKeyword == -1) {
+			System.out.println("Không thấy từ: " + keyword);
+		}else {
+			System.out.println("Nhập từ mới (English): ");
+			String word1 = sc.nextLine();
+			System.out.println("Nhập nghĩa của từ mới (Vietnamese): ");
+			String word2 = sc.nextLine();
+			getDictionaries().getData().set(indexKeyword, new Word(word1, word2));
 		}
 	}
 	
@@ -116,13 +148,24 @@ public class DictionaryManagement {
 		String deleteWord;
 		System.out.println("Nhập từ cần xóa: ");
 		deleteWord = sc.nextLine();
-		for (Word word : this.getDictionaries().getData()) {
-			if(word.getWord_target().equals(deleteWord)) {
-				this.getDictionaries().getData().remove(word);
-				break;
-			}
-		}
+		
+		int indexKeyword = searchBinary(getDictionaries().getData(), deleteWord, 0, getDictionaries().getData().size());
+		this.getDictionaries().getData().remove(indexKeyword);
 	}
+	
+	// Search Binary
+	public int searchBinary(ArrayList<Word> wordList, String str, int head, int tail) {
+		if(tail < head + 2)	
+			return -1;
+		else
+			if(wordList.get((head+tail)/2).getWord_target().compareTo(str)==0)	return (head+tail)/2;
+		else 
+			if((wordList.get((head+tail)/2).getWord_target().compareTo(str)>0))
+				return searchBinary(wordList,str,head,(head+tail)/2);
+		else
+			return searchBinary(wordList,str,(head+tail)/2,tail);
+		
+	}	
 	
 	// Option 
 	public void selectOption(DictionaryCommandLine dictionaryCommandLine) {
@@ -132,7 +175,7 @@ public class DictionaryManagement {
 		switch (userOption) {
 		case 1:
 			//Them tu
-			insertFromCommandline();
+			addAWord();
 			System.out.println("Thêm từ thành công!!\n");
 			break;
 			
@@ -148,8 +191,8 @@ public class DictionaryManagement {
 		
 		case 4:
 			//Tim kiem
-//			this.dictionaryLookup();
-			dictionaryCommandLine.dictionarySearcher();
+			this.dictionaryLookup();
+//			dictionaryCommandLine.dictionarySearcher();
 			break;
 			
 		case 5:
@@ -166,14 +209,4 @@ public class DictionaryManagement {
 			break;
 		}
 	}
-	
-	
-	// Sort Word
-//	public void sortList(ArrayList<Word> wordList) {
-//		Collections.sort(wordList, new Comparator<Word>() {
-//			public int  compare(Word word1, Word word2) {
-//				return (word1.getWord_target().compareTo(word2.getWord_target()));
-//			}
-//		});
-//	}
 }
