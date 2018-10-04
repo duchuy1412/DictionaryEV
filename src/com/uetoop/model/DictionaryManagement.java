@@ -8,10 +8,14 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Scanner;
 
 public class DictionaryManagement {
-	public Dictionary dictionaries = new Dictionary();
+	private Dictionary dictionaries = new Dictionary();
 	
 	public Dictionary getDictionaries() {
 		return dictionaries;
@@ -57,7 +61,7 @@ public class DictionaryManagement {
 	// Export Dictionary to file
 	public void dictionaryExportToFile() {
 		try{
-			FileWriter writer = new FileWriter("src/export.txt"); 
+			FileWriter writer = new FileWriter("src/dictionaries.txt"); 
 			for(Word word: getDictionaries().getData()) {
 				  writer.write(word.getWord_target() + "\t" + word.getWord_explain() + "\n");
 			}
@@ -162,4 +166,14 @@ public class DictionaryManagement {
 			break;
 		}
 	}
+	
+	
+	// Sort Word
+//	public void sortList(ArrayList<Word> wordList) {
+//		Collections.sort(wordList, new Comparator<Word>() {
+//			public int  compare(Word word1, Word word2) {
+//				return (word1.getWord_target().compareTo(word2.getWord_target()));
+//			}
+//		});
+//	}
 }

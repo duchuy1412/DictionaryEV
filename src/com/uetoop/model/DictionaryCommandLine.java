@@ -30,6 +30,7 @@ public class DictionaryCommandLine {
 		
 		// Show All Words
 		public void showAllWords(Dictionary dictionaries) {
+//			dictionaryManagement.sortList(dictionaryManagement.dictionaries.getData());
 			System.out.println(" No\t| English\t\t| Vietnamese\t\t\t\n");
 			int no = 0;
 			for (Word word : dictionaries.getData()) {
@@ -56,19 +57,20 @@ public class DictionaryCommandLine {
 			}
 			if(isFinded == 0) {
 				System.out.println("Không thấy kết quả nào");
+				
 			}
 		}
 		
 		// Dictionary Basic
 		public void dictionaryBasic() {
 			dictionaryManagement.insertFromCommandline();
-			this.showAllWords(dictionaryManagement.dictionaries);
+			this.showAllWords(dictionaryManagement.getDictionaries());
 		}
 		
 		// Dictionary Advanced
 		public void dictionaryAdvanced() {
 			dictionaryManagement.insertFromFile();
-			this.showAllWords(dictionaryManagement.dictionaries);
+			this.showAllWords(dictionaryManagement.getDictionaries());
 			this.showOption();
 		}
 }

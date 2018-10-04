@@ -6,7 +6,7 @@ package com.uetoop.model;
 import java.util.ArrayList;
 
 public class Dictionary {
-	ArrayList<Word> data = new ArrayList<Word>();
+	private ArrayList<Word> data = new ArrayList<Word>();
 
 	public ArrayList<Word> getData() {
 		return data;
