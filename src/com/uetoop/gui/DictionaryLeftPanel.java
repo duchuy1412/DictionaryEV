@@ -29,10 +29,11 @@ import com.uetoop.utils.IconItem;
 public class DictionaryLeftPanel extends JPanel implements DocumentListener, ActionListener{
 	//Components
 	private JList list;
-	private JLabel lblSearchBar;
+	private JLabel lblSearchBar, lblLogo;
+	private JPanel logoPanel;
 	private JScrollPane scrollPane, scrollPaneDict, scrollPaneRencent, scrollPaneMark;
 	private JFormattedTextField txtSearchBar;
-	private JButton btnSearch, btnAdd, btnEdit, btnDelete, btnClear, btnUp, btnDown;
+	private JButton btnSearch, btnClear, btnUp, btnDown;
 	private JTabbedPane tabbedPane;
 	private ArrayList<String> listWord;
 	
@@ -51,32 +52,23 @@ public class DictionaryLeftPanel extends JPanel implements DocumentListener, Act
 			listWord.add(w.getWord_target());
 		}
 		
-		// Button Add
-		btnAdd = new JButton("Thêm");
-		btnAdd.setIcon(IconItem.iconAdd);
-		btnAdd.setBounds(5, 15, 90, 25);
-		btnAdd.setToolTipText("Thêm từ	");
-		btnAdd.addActionListener(this);
-		add(btnAdd);
+		//Logo Panel
+		logoPanel = new JPanel();
+		logoPanel.setBounds(0, 0, 290, 50);
+		logoPanel.setBackground(Color.GRAY);
+		logoPanel.setLayout(null);
+		add(logoPanel);
 		
-		// Button Modify
-		btnEdit = new JButton("Sửa");
-		btnEdit.setIcon(IconItem.iconModify);
-		btnEdit.setBounds(100, 15, 90, 25);
-		btnEdit.setToolTipText("Sửa từ");
-		btnEdit.addActionListener(this);
-		add(btnEdit);
-		
-		// Button Delete
-		btnDelete = new JButton("Xóa");
-		btnDelete.setIcon(IconItem.iconDelete);
-		btnDelete.setBounds(195, 15, 90, 25);
-		btnDelete.setToolTipText("Xóa từ");
-		btnDelete.addActionListener(this);
-		add(btnDelete);
-		
+		//Label Logo
+		lblLogo = new JLabel("Từ điển Anh-Việt");
+		lblLogo.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 20));
+		lblLogo.setBounds(60, 10, 250, 30);
+		lblLogo.setForeground(Color.LIGHT_GRAY);
+		logoPanel.add(lblLogo);
+				
 		// Label Searcher
 		lblSearchBar = new JLabel("Tìm kiếm:");
+		lblSearchBar.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
 		lblSearchBar.setBounds(10, 60, 180, 20);
 		add(lblSearchBar);
 		
@@ -217,13 +209,7 @@ public class DictionaryLeftPanel extends JPanel implements DocumentListener, Act
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if(e.getSource().equals(btnAdd)) {
-			System.out.println("Add");
-		}else if(e.getSource().equals(btnEdit)) {
-			System.out.println("Edit");
-		}else if(e.getSource().equals(btnDelete)) {
-			System.out.println("Delete");
-		}else if(e.getSource().equals(btnClear)) {
+		if(e.getSource().equals(btnClear)) {
 			this.txtSearchBar.setText(null);
 		}
 	}

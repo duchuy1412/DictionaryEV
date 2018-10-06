@@ -9,6 +9,7 @@ import javax.swing.*;
 
 public class DictionaryPanel extends JPanel{
 	private DictionaryLeftPanel leftPanel;
+	private DictionaryRightPanel rightPanel;
 	
 	public DictionaryPanel() {
 		setLayout(null);
@@ -16,6 +17,10 @@ public class DictionaryPanel extends JPanel{
 		leftPanel = new DictionaryLeftPanel();
 		add(leftPanel);
 		
+		
+		//right panel
+		rightPanel = new DictionaryRightPanel();
+		add(rightPanel);
 		
 		setBackground(Color.CYAN);
         
