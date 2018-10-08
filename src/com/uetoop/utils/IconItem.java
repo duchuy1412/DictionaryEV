@@ -15,7 +15,9 @@ public class IconItem {
 	public static final ImageIcon iconUp = new ImageIcon("res/Up.png");
 	public static final ImageIcon iconDown = new ImageIcon("res/Down.png");
 	public static final ImageIcon iconClock = new ImageIcon("res/Clock.png");
-	public static final ImageIcon iconFavourites = new ImageIcon("res/Favourites.png");
+	public static final ImageIcon iconStarred = new ImageIcon("res/Favourites.png");
+	public static final ImageIcon iconStar = new ImageIcon("res/star.png");
 	public static final ImageIcon iconList = new ImageIcon("res/List.png");
+	public static final ImageIcon iconSpeaker = new ImageIcon("res/sound.png");
 
 }

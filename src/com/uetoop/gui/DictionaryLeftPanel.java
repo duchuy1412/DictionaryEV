@@ -9,6 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
@@ -21,35 +23,41 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import com.uetoop.model.DictionaryManagement;
 import com.uetoop.model.Word;
 import com.uetoop.utils.IconItem;
 
-public class DictionaryLeftPanel extends JPanel implements DocumentListener, ActionListener{
+public class DictionaryLeftPanel extends JPanel implements DocumentListener, ActionListener, ListSelectionListener{
 	//Components
 	private JList list;
 	private JLabel lblSearchBar, lblLogo;
 	private JPanel logoPanel;
-	private JScrollPane scrollPane, scrollPaneDict, scrollPaneRencent, scrollPaneMark;
+	private JScrollPane scrollPane, scrollPaneDict, scrollPaneRecent, scrollPaneMark;
 	private JFormattedTextField txtSearchBar;
 	private JButton btnSearch, btnClear, btnUp, btnDown;
 	private JTabbedPane tabbedPane;
-	private ArrayList<String> listWord;
+	private DefaultListModel<String> listWord, listRecent, listMark;
+	private ArrayList<Word> listDict;
 	
 	//Dictionary
 	private DictionaryManagement dictionaryManagement;
 	
 	
-	public DictionaryLeftPanel() {
-		// Construct
+	public DictionaryLeftPanel() {		
+		// Dictionary Manager
 		dictionaryManagement = new DictionaryManagement();
-		listWord = new ArrayList<String>();
+		listDict = dictionaryManagement.getDictionaries().getData();
 		
-		// import data
-		dictionaryManagement.insertFromFile();
-		for (Word w : dictionaryManagement.getDictionaries().getData()) {
-			listWord.add(w.getWord_target());
+		listWord = new DefaultListModel<String>();
+		listRecent = new DefaultListModel<String>();
+		listMark = new DefaultListModel<String>();
+		
+		// import list of WORD_TARGET
+		for(int i = 0; i < listDict.size(); i++) {
+			listWord.addElement(listDict.get(i).getWord_target());
 		}
 		
 		//Logo Panel
@@ -117,9 +125,24 @@ public class DictionaryLeftPanel extends JPanel implements DocumentListener, Act
 		add(btnDown);
 		
 		// Create ScrollPane from List
-		scrollPaneDict = creatScrollPaneWithList(listWord.toArray());
-		scrollPaneRencent = creatScrollPaneWithList(listWord.toArray());
-		scrollPaneMark = creatScrollPaneWithList(listWord.toArray());
+//		scrollPaneDict = creatScrollPaneWithList(listWord.toArray());
+//		scrollPaneRecent = creatScrollPaneWithList(listRecent.toArray());
+//		scrollPaneMark = creatScrollPaneWithList(listMark.toArray());
+		
+		DefaultListModel listModel = new DefaultListModel();
+		for (Object obj : listWord.toArray()) {
+			listModel.addElement(obj);
+		}
+		// Create a list
+		list = new JList(listModel);
+		list.setFont(new Font(Font.SANS_SERIF, Font.TRUETYPE_FONT, 14));
+		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); //single selection
+		list.setSelectedIndex(0);
+		list.addListSelectionListener(this);
+        scrollPaneDict = new JScrollPane();
+        scrollPaneDict.setViewportView(list);
+        scrollPaneDict.setHorizontalScrollBar(null);
+		
 		
         // Create Tabbed Pane
         tabbedPane = new JTabbedPane();
@@ -129,10 +152,10 @@ public class DictionaryLeftPanel extends JPanel implements DocumentListener, Act
         tabbedPane.addTab("", IconItem.iconList, scrollPaneDict, "Toàn bộ");
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
         // Add Tab 2
-        tabbedPane.addTab("", IconItem.iconClock, scrollPaneRencent, "Những từ học gần đây");
+        tabbedPane.addTab("", IconItem.iconClock, scrollPaneRecent, "Những từ học gần đây");
         tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
         // Add Tab 3
-        tabbedPane.addTab("", IconItem.iconFavourites, scrollPaneMark, "Những từ được gắn dấu sao");
+        tabbedPane.addTab("", IconItem.iconStarred, scrollPaneMark, "Những từ được gắn dấu sao");
         tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
         
         // Array title of tabs
@@ -168,15 +191,25 @@ public class DictionaryLeftPanel extends JPanel implements DocumentListener, Act
 	}
 	
 	//Create a Scroll Pane 
-	public JScrollPane creatScrollPaneWithList(Object[] Obj) {
-		// Create a list
-		list = new JList(Obj);
-		list.setFont(new Font(Font.SANS_SERIF, Font.TRUETYPE_FONT, 14));
-		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); //single selection
-		list.setSelectedIndex(0);
-        scrollPane = new JScrollPane(list);
-        scrollPane.setHorizontalScrollBar(null);
-        return scrollPane;
+//	public JScrollPane creatScrollPaneWithList(Object[] Obj) {
+//		DefaultListModel listModel = new DefaultListModel();
+//		for (Object obj : Obj) {
+//			listModel.addElement(obj);
+//		}
+//		// Create a list
+//		list = new JList(listModel);
+//		list.setFont(new Font(Font.SANS_SERIF, Font.TRUETYPE_FONT, 14));
+//		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); //single selection
+//		list.setSelectedIndex(0);
+//        scrollPane = new JScrollPane();
+//        scrollPane.setViewportView(list);
+//        scrollPane.setHorizontalScrollBar(null);
+//        return scrollPane;
+//	}
+	
+	//Update ScrollPane 
+	public void updateScrollPane() {
+
 	}
 
 	@Override
@@ -203,6 +236,7 @@ public class DictionaryLeftPanel extends JPanel implements DocumentListener, Act
             @Override
             public void run() {
                 System.out.println(txtSearchBar.getText());
+                updateScrollPane();
             }
         });
     }
@@ -213,5 +247,21 @@ public class DictionaryLeftPanel extends JPanel implements DocumentListener, Act
 			this.txtSearchBar.setText(null);
 		}
 	}
+
+	@Override
+	public void valueChanged(ListSelectionEvent e) {
+		if (e.getValueIsAdjusting() == false) {
+			System.out.println(list.getSelectedIndex());
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 }

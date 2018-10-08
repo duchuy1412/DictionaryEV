@@ -5,8 +5,10 @@ package com.uetoop.model;
 
 import java.util.ArrayList;
 
+import com.uetoop.connection.JDBCStatement;
+
 public class Dictionary {
-	ArrayList<Word> data = new ArrayList<Word>();
+	private static ArrayList<Word> data = JDBCStatement.getData();
 
 	public ArrayList<Word> getData() {
 		return data;
