@@ -8,6 +8,7 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 
 import javax.swing.*;
@@ -19,12 +20,15 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.Document;
+import javax.swing.text.SimpleAttributeSet;
 
 import com.uetoop.model.DictionaryManagement;
 import com.uetoop.model.Word;
 import com.uetoop.utils.IconItem;
 
-public class DictionaryPanel extends JPanel implements ListSelectionListener, DocumentListener, ActionListener {
+public class DictionaryPanel extends JPanel
+		implements ListSelectionListener, DocumentListener, ActionListener, KeyListener {
 	// Components Left
 	private JList<String> listWord, listRecent, listMark;
 	private JLabel lblSearchBar, lblLogo;
@@ -33,13 +37,15 @@ public class DictionaryPanel extends JPanel implements ListSelectionListener, Do
 	private JFormattedTextField txtSearchBar;
 	private JButton btnSearch, btnClear, btnUp, btnDown;
 	private JTabbedPane tabbedPane;
-	private DefaultListModel<String> listModelWord, listModelRecent, listModelMark;
+	private DefaultListModel<String> listModelWord, listModelRecent, listModelMark, resultList;
 	private ArrayList<Word> listDict;
 	// Components Right
-	private JTextArea txtAreaDetail;
+	private JTextPane tpDetail;
 	private JLabel lblDetail;
 	private JButton btnAdd, btnEdit, btnDelete, btnMark, btnPronounce;
 	private JScrollPane scrollPane;
+	private Document doc;
+	private SimpleAttributeSet set;
 
 	// Dictionary
 	private DictionaryManagement dictionaryManagement;
@@ -129,6 +135,7 @@ public class DictionaryPanel extends JPanel implements ListSelectionListener, Do
 		txtSearchBar.getDocument().addDocumentListener(this);
 		txtSearchBar.setBounds(40, 85, 190, 25);
 		txtSearchBar.setToolTipText("Nhập từ cần tìm");
+		txtSearchBar.addKeyListener(this);
 		pnlLeftBottom.add(txtSearchBar);
 
 		// Button searcher
@@ -271,6 +278,7 @@ public class DictionaryPanel extends JPanel implements ListSelectionListener, Do
 		btnMark.setToolTipText("Đánh dấu từ này");
 		btnMark.setContentAreaFilled(false);
 		btnMark.setBorderPainted(false);
+		btnMark.setEnabled(false);
 		btnMark.addActionListener(this);
 		pnlRightTop.add(btnMark);
 
@@ -281,6 +289,7 @@ public class DictionaryPanel extends JPanel implements ListSelectionListener, Do
 		btnPronounce.setToolTipText("Phát âm từ này");
 		btnPronounce.setContentAreaFilled(false);
 		btnPronounce.setBorderPainted(false);
+		btnPronounce.setEnabled(false);
 		btnPronounce.addActionListener(this);
 		pnlRightTop.add(btnPronounce);
 	}
@@ -293,28 +302,51 @@ public class DictionaryPanel extends JPanel implements ListSelectionListener, Do
 		pnlRightBottom.add(lblDetail);
 
 		// Detail
-		txtAreaDetail = new JTextArea();
+		tpDetail = new JTextPane();
 		Border border = BorderFactory.createLineBorder(Color.BLUE);
-		txtAreaDetail.setBorder(
+		tpDetail.setBorder(
 				BorderFactory.createCompoundBorder(border, BorderFactory.createBevelBorder(BevelBorder.LOWERED)));
-		txtAreaDetail.setEditable(true);
-
+//		doc = tpDetail.getStyledDocument();
+//		set = new SimpleAttributeSet();
+		// Set the attributes before adding text
+//	    tpDetail.setCharacterAttributes(set, true);
+	    
 		scrollPane = new JScrollPane();
-		scrollPane.setViewportView(txtAreaDetail);
+		scrollPane.setViewportView(tpDetail);
 		scrollPane.setBounds(10, 90, 570, 550);
-		scrollPane.setHorizontalScrollBar(null);
+		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		pnlRightBottom.add(scrollPane);
+	}
+	
+	public void showDetailOfWord(ArrayList<Word> list, String str) {
+		for(Word w : list) {
+			if(w.getWord_target().equals(str)) {
+				String detail = w.getWord_explain();
+
+				detail = detail.replace("<C><F><I><N><Q>", "");
+				detail = detail.replace("</Q></N></I></F></C>", "");
+				detail = detail.replace("<br />-", "\n\t-");
+				detail = detail.replace("<br />=", "\n\t\t=");
+				detail = detail.replace("<br />*", "\n*");
+				tpDetail.setText(detail);
+			}
+		}
 	}
 
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
 		if (e.getValueIsAdjusting() == false) {
-			if(listWord.getSelectedIndex() == -1) {
+			if (listWord.getSelectedIndex() == -1) {
 				btnEdit.setEnabled(false);
 				btnDelete.setEnabled(false);
-			}else {
+				btnPronounce.setEnabled(false);
+				btnMark.setEnabled(false);
+			} else {
+				showDetailOfWord(listDict, listWord.getSelectedValue());
 				btnEdit.setEnabled(true);
 				btnDelete.setEnabled(true);
+				btnPronounce.setEnabled(true);
+				btnMark.setEnabled(true);
 			}
 		}
 	}
@@ -325,14 +357,26 @@ public class DictionaryPanel extends JPanel implements ListSelectionListener, Do
 			this.txtSearchBar.setText(null);
 		} else if (e.getSource().equals(btnAdd)) {
 			System.out.println("Add");
+		} else if (e.getSource().equals(btnEdit)) {
+
 		} else if (e.getSource().equals(btnDelete)) {
-			if(this.listWord.getSelectedIndex() != -1) {
-				if(JOptionPane.showConfirmDialog(null, "Bạn chắc chắn muốn xóa từ này?", "Xóa từ", 
+			if (this.listWord.getSelectedIndex() != -1) {
+				if (JOptionPane.showConfirmDialog(null, "Bạn chắc chắn muốn xóa từ này?", "Xóa từ",
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
 					this.listModelWord.remove(this.listWord.getSelectedIndex());
 				}
 			}
-		} else if (e.getSource().equals(btnMark)) {
+		} else if (e.getSource().equals(btnUp)) {
+			listWord.setSelectedIndex(listWord.getSelectedIndex()-1);
+		} else if (e.getSource().equals(btnDown)) {
+			listWord.setSelectedIndex(listWord.getSelectedIndex()+1);
+		} else if (e.getSource().equals(btnPronounce)) {
+
+		} else if (e.getSource().equals(btnSearch)) {
+
+		}
+
+		else if (e.getSource().equals(btnMark)) {
 			if (btnMark.getIcon().equals(IconItem.iconStarred)) {
 				btnMark.setIcon(IconItem.iconStar);
 			} else {
@@ -360,19 +404,48 @@ public class DictionaryPanel extends JPanel implements ListSelectionListener, Do
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				DefaultListModel<String> resultList = resultSearch(txtSearchBar.getText(), listModelWord);
+				resultList = resultSearch(txtSearchBar.getText(), listModelWord);
 				listWord.setModel(resultList);
+				listWord.setSelectedIndex(0);
+				showDetailOfWord(listDict, listWord.getSelectedValue());
 			}
 		});
 	}
-	
-	public DefaultListModel<String> resultSearch(String keyword, DefaultListModel<String> obj){
+
+	public DefaultListModel<String> resultSearch(String keyword, DefaultListModel<String> obj) {
 		DefaultListModel<String> rsList = new DefaultListModel<String>();
 		for (int i = 0; i < obj.size(); i++) {
-			if(obj.get(i).indexOf(keyword)==0) {
+			if (obj.get(i).indexOf(keyword) == 0) {
 				rsList.addElement(obj.get(i));
 			}
 		}
 		return rsList;
 	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		keyTest(e);
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+
+	}
+
+	public void keyTest(KeyEvent e) {
+		if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+			txtSearchBar.setText(listWord.getSelectedValue());
+		}
+		if(e.getKeyCode() == KeyEvent.VK_UP) {
+			listWord.setSelectedIndex(listWord.getSelectedIndex()-1);
+		}else if(e.getKeyCode() == KeyEvent.VK_DOWN) {
+			listWord.setSelectedIndex(listWord.getSelectedIndex()+1);
+		}
+	}
+	
 }
