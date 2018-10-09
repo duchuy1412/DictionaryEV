@@ -16,11 +16,4 @@ public class DictionaryManagement {
 		return dictionaries;
 	}
 	
-	public void editWord() {
-		
-	}
-	
-	public void deleteWord() {
-
-	}
 }
