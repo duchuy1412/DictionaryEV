@@ -4,11 +4,18 @@
 package com.uetoop.gui;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Frame;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 import javax.swing.*;
@@ -23,12 +30,15 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 
+import com.sun.speech.freetts.Voice;
+import com.sun.speech.freetts.VoiceManager;
+import com.uetoop.connection.JDBCStatement;
 import com.uetoop.model.DictionaryManagement;
 import com.uetoop.model.Word;
 import com.uetoop.utils.IconItem;
 
 public class DictionaryPanel extends JPanel
-		implements ListSelectionListener, DocumentListener, ActionListener, KeyListener {
+		implements ListSelectionListener, DocumentListener, ActionListener, KeyListener, MouseListener {
 	// Components Left
 	private JList<String> listWord, listRecent, listMark;
 	private JLabel lblSearchBar, lblLogo;
@@ -44,29 +54,21 @@ public class DictionaryPanel extends JPanel
 	private JLabel lblDetail;
 	private JButton btnAdd, btnEdit, btnDelete, btnMark, btnPronounce;
 	private JScrollPane scrollPane;
-	private Document doc;
-	private SimpleAttributeSet set;
 
 	// Dictionary
 	private DictionaryManagement dictionaryManagement;
 
 	public DictionaryPanel() {
 		dictionaryManagement = new DictionaryManagement();
-		listDict = dictionaryManagement.getDictionaries().getData();
 
 		listModelWord = new DefaultListModel<String>();
 		listModelRecent = new DefaultListModel<String>();
 		listModelMark = new DefaultListModel<String>();
-
-		// import list of WORD_TARGET
-		for (int i = 0; i < listDict.size(); i++) {
-			listModelWord.addElement(listDict.get(i).getWord_target());
-		}
-
-		listModelMark.addElement("abcsas");
-		listModelRecent.addElement("Rencently");
+		resultList = new DefaultListModel<String>();
+		loadData();
 
 		// this
+		addKeyListener(this);
 		setLayout(null);
 		setBackground(Color.CYAN);
 
@@ -112,6 +114,23 @@ public class DictionaryPanel extends JPanel
 
 	}
 
+	// Reload Data (When Insert)
+	public void loadData() {
+		listDict = dictionaryManagement.getDictionaries().getData();
+		// import list of WORD_TARGET
+		for (int i = 0; i < listDict.size(); i++) {
+			listModelWord.addElement(listDict.get(i).getWord_target());
+		}
+
+		for (int i = 0; i < dictionaryManagement.getDictionaries().getRecent().size(); i++) {
+			listModelRecent.addElement(dictionaryManagement.getDictionaries().getRecent().get(i));
+		}
+
+		for (int i = 0; i < dictionaryManagement.getDictionaries().getMark().size(); i++) {
+			listModelMark.addElement(dictionaryManagement.getDictionaries().getMark().get(i));
+		}
+	}
+
 	private void addToLeftTop() {
 		// Label Logo
 		lblLogo = new JLabel("Từ điển Anh-Việt");
@@ -136,6 +155,7 @@ public class DictionaryPanel extends JPanel
 		txtSearchBar.setBounds(40, 85, 190, 25);
 		txtSearchBar.setToolTipText("Nhập từ cần tìm");
 		txtSearchBar.addKeyListener(this);
+		txtSearchBar.addMouseListener(this);
 		pnlLeftBottom.add(txtSearchBar);
 
 		// Button searcher
@@ -143,6 +163,7 @@ public class DictionaryPanel extends JPanel
 		btnSearch.setBounds(235, 85, 45, 25);
 		btnSearch.setToolTipText("Tra từ");
 		btnSearch.setIcon(IconItem.iconSearch);
+		btnSearch.addActionListener(this);
 		pnlLeftBottom.add(btnSearch);
 
 		// Button Clear
@@ -207,7 +228,7 @@ public class DictionaryPanel extends JPanel
 		tabbedPane.addTab("", IconItem.iconList, scrollPaneDict, "Toàn bộ");
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 		// Add Tab 2
-		tabbedPane.addTab("", IconItem.iconClock, scrollPaneRecent, "Những từ học gần đây");
+		tabbedPane.addTab("", IconItem.iconClock, scrollPaneRecent, "Tìm gần đây");
 		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 		// Add Tab 3
 		tabbedPane.addTab("", IconItem.iconStarred, scrollPaneMark, "Những từ được gắn dấu sao");
@@ -306,21 +327,30 @@ public class DictionaryPanel extends JPanel
 		Border border = BorderFactory.createLineBorder(Color.BLUE);
 		tpDetail.setBorder(
 				BorderFactory.createCompoundBorder(border, BorderFactory.createBevelBorder(BevelBorder.LOWERED)));
-//		doc = tpDetail.getStyledDocument();
-//		set = new SimpleAttributeSet();
-		// Set the attributes before adding text
-//	    tpDetail.setCharacterAttributes(set, true);
-	    
+		tpDetail.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 14));
+
 		scrollPane = new JScrollPane();
 		scrollPane.setViewportView(tpDetail);
 		scrollPane.setBounds(10, 90, 570, 550);
 		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		pnlRightBottom.add(scrollPane);
 	}
-	
+
+	//detele word (final)
+	public void deleteWord(String tuCanXoa) {
+		if (JOptionPane.showConfirmDialog(null, "Bạn chắc chắn muốn xóa từ này?", "Xóa từ",
+				JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+			listModelWord.removeElement(tuCanXoa);
+			listModelMark.removeElement(tuCanXoa);
+			listModelRecent.removeElement(tuCanXoa);
+			this.resultList.removeElement(tuCanXoa);
+			JDBCStatement.deleteWord(tuCanXoa);
+		}
+	}
+
 	public void showDetailOfWord(ArrayList<Word> list, String str) {
-		for(Word w : list) {
-			if(w.getWord_target().equals(str)) {
+		for (Word w : list) {
+			if (w.getWord_target().equals(str)) {
 				String detail = w.getWord_explain();
 
 				detail = detail.replace("<C><F><I><N><Q>", "");
@@ -328,26 +358,46 @@ public class DictionaryPanel extends JPanel
 				detail = detail.replace("<br />-", "\n\t-");
 				detail = detail.replace("<br />=", "\n\t\t=");
 				detail = detail.replace("<br />*", "\n*");
+				detail = detail.replace("<br />", "\n");
 				tpDetail.setText(detail);
 			}
+		}
+	}
+
+	private void addToListRecent(String str) {
+		if (listModelRecent.contains(str)) {
+			listModelRecent.removeElement(str);
+			JDBCStatement.deleteWordRecent(str);
+		} else {
+			listModelRecent.addElement(str);
+			JDBCStatement.addWordRecent(str);
 		}
 	}
 
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
 		if (e.getValueIsAdjusting() == false) {
-			if (listWord.getSelectedIndex() == -1) {
+			if (getActiveList().getSelectedIndex() == -1) {
 				btnEdit.setEnabled(false);
 				btnDelete.setEnabled(false);
 				btnPronounce.setEnabled(false);
 				btnMark.setEnabled(false);
 			} else {
-				showDetailOfWord(listDict, listWord.getSelectedValue());
+				showDetailOfWord(listDict, getSelectedWord());
 				btnEdit.setEnabled(true);
 				btnDelete.setEnabled(true);
 				btnPronounce.setEnabled(true);
 				btnMark.setEnabled(true);
+				checkMark(getSelectedWord());
 			}
+		}
+	}
+
+	private void checkMark(String s) {
+		if (listModelMark.contains(s)) {
+			btnMark.setIcon(IconItem.iconStarred);
+		} else {
+			btnMark.setIcon(IconItem.iconStar);
 		}
 	}
 
@@ -356,33 +406,108 @@ public class DictionaryPanel extends JPanel
 		if (e.getSource().equals(btnClear)) {
 			this.txtSearchBar.setText(null);
 		} else if (e.getSource().equals(btnAdd)) {
-			System.out.println("Add");
+			insertWord();
 		} else if (e.getSource().equals(btnEdit)) {
-
+			updateWord(getSelectedWord());
 		} else if (e.getSource().equals(btnDelete)) {
-			if (this.listWord.getSelectedIndex() != -1) {
-				if (JOptionPane.showConfirmDialog(null, "Bạn chắc chắn muốn xóa từ này?", "Xóa từ",
-						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-					this.listModelWord.remove(this.listWord.getSelectedIndex());
-				}
-			}
+			deleteWord(getSelectedWord());
 		} else if (e.getSource().equals(btnUp)) {
-			listWord.setSelectedIndex(listWord.getSelectedIndex()-1);
+			selectUpWord();
 		} else if (e.getSource().equals(btnDown)) {
-			listWord.setSelectedIndex(listWord.getSelectedIndex()+1);
+			selectDownWord();
 		} else if (e.getSource().equals(btnPronounce)) {
+			 System.out.println("PA");
+			 VoiceManager voiceMan;
+			 Voice voice;
+			
+			 String speakString = getActiveList().getSelectedValue(); // String word
+//			 System.setProperty("mbrola.base", "mbrola");
+			 System.setProperty("freetts.voices", "com.sun.speech.freetts.en.us.cmu_us_kal.KevinVoiceDirectory");
+			 voiceMan = VoiceManager.getInstance();
+			 voice = voiceMan.getVoice("kevin16");
+			 voice.allocate();
 
+			// try {
+			 voice.speak(speakString);
+			// } catch (Exception exc) {
+			// exc.printStackTrace();
+			// }
 		} else if (e.getSource().equals(btnSearch)) {
-
+			submitSearch();
 		}
 
 		else if (e.getSource().equals(btnMark)) {
+			String str = getSelectedWord();
 			if (btnMark.getIcon().equals(IconItem.iconStarred)) {
 				btnMark.setIcon(IconItem.iconStar);
+				removeFromListMark(str);
 			} else {
 				btnMark.setIcon(IconItem.iconStarred);
+				addToListMark(str);
 			}
 		}
+	}
+
+	private void insertWord() {
+		JTextField wordField = new JTextField(15);
+		JTextField detailField = new JTextField(15);
+		
+		JPanel myPanel = new JPanel(new GridLayout(2, 2));
+		myPanel.add(new JLabel("Từ mới:"));
+		myPanel.add(wordField);
+		myPanel.add(Box.createHorizontalStrut(15)); // a spacer
+		myPanel.add(new JLabel("Nghĩa mới:"));
+		myPanel.add(detailField);
+		
+		if (JOptionPane.showConfirmDialog(null, myPanel, "Thêm từ",
+				JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+			JDBCStatement.addWord(wordField.getText(), detailField.getText());
+			// JDBCStatement.sortData();
+			this.loadData();
+		}
+	}
+
+	//
+	private void updateWord(String selectedWord) {
+		JTextField wordField = new JTextField(15);
+		wordField.setText(selectedWord);
+		wordField.setEditable(false);
+		JTextField detailField = new JTextField(15);
+		detailField.setText("Sửa nghĩa của từ tại đây");
+		
+		JPanel myPanel = new JPanel(new GridLayout(2, 2));
+		myPanel.add(new JLabel("Sửa từ:"));
+		myPanel.add(wordField);
+		myPanel.add(Box.createHorizontalStrut(15)); // a spacer
+		myPanel.add(new JLabel("Sửa nghĩa của từ:"));
+		myPanel.add(detailField);
+
+		if (JOptionPane.showConfirmDialog(null, myPanel, "Sửa từ",
+				JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+			JDBCStatement.updateWord(wordField.getText(), detailField.getText());
+			tpDetail.setText(detailField.getText());
+			this.loadData();
+		}
+	}
+
+	private void submitSearch() {
+		System.out.println("DictionaryPanel.submitSearch()");
+		getActiveList().setSelectedIndex(0);
+		String str = getActiveList().getSelectedValue();
+		addToListRecent(str);
+		txtSearchBar.setText(str);
+		showDetailOfWord(listDict, str);
+	}
+
+	private void removeFromListMark(String s) {
+		listModelMark.removeElement(s);
+
+		JDBCStatement.deleteWordMark(s);
+	}
+
+	private void addToListMark(String s) {
+		listModelMark.addElement(s);
+		JDBCStatement.addWordMark(s);
 	}
 
 	@Override
@@ -404,14 +529,24 @@ public class DictionaryPanel extends JPanel
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			@Override
 			public void run() {
+				// Open list word when searching
+				if (tabbedPane.getSelectedIndex() != 0)
+					tabbedPane.setSelectedIndex(0);
 				resultList = resultSearch(txtSearchBar.getText(), listModelWord);
-				listWord.setModel(resultList);
-				listWord.setSelectedIndex(0);
-				showDetailOfWord(listDict, listWord.getSelectedValue());
+				if (resultList.size() > 0) {
+					listWord.setModel(resultList);
+					listWord.setSelectedIndex(0);
+					showDetailOfWord(listDict, listWord.getSelectedValue());
+				} else {
+					listWord.setModel(resultList);
+					tpDetail.setText("Not Found");
+				}
+
 			}
 		});
 	}
 
+	// Look up word
 	public DefaultListModel<String> resultSearch(String keyword, DefaultListModel<String> obj) {
 		DefaultListModel<String> rsList = new DefaultListModel<String>();
 		for (int i = 0; i < obj.size(); i++) {
@@ -424,7 +559,7 @@ public class DictionaryPanel extends JPanel
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		keyTest(e);
+		keyEvt(e);
 	}
 
 	@Override
@@ -437,15 +572,73 @@ public class DictionaryPanel extends JPanel
 
 	}
 
-	public void keyTest(KeyEvent e) {
+	public void keyEvt(KeyEvent e) {
 		if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-			txtSearchBar.setText(listWord.getSelectedValue());
+			submitSearch();
 		}
-		if(e.getKeyCode() == KeyEvent.VK_UP) {
-			listWord.setSelectedIndex(listWord.getSelectedIndex()-1);
-		}else if(e.getKeyCode() == KeyEvent.VK_DOWN) {
-			listWord.setSelectedIndex(listWord.getSelectedIndex()+1);
+		if (e.getKeyCode() == KeyEvent.VK_UP) {
+			selectUpWord();
+		}
+		if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+			selectDownWord();
 		}
 	}
-	
+
+	public void selectUpWord() throws IndexOutOfBoundsException {
+		if (getActiveList().getSelectedIndex() > 0)
+			getActiveList().setSelectedIndex(getActiveList().getSelectedIndex() - 1);
+	}
+
+	public void selectDownWord() throws IndexOutOfBoundsException {
+		getActiveList().setSelectedIndex(getActiveList().getSelectedIndex() + 1);
+	}
+
+	public JList<String> getActiveList() {
+		switch (tabbedPane.getSelectedIndex()) {
+		case 0:
+			return listWord;
+		case 1:
+			return listRecent;
+		case 2:
+			return listMark;
+		default:
+			break;
+		}
+		return listWord;
+	}
+
+	// return a String that selected
+	public String getSelectedWord() {
+		return getActiveList().getSelectedValue();
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent arg0) {
+
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mouseExited(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mousePressed(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+
+	}
+
 }

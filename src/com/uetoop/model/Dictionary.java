@@ -8,9 +8,15 @@ import java.util.ArrayList;
 import com.uetoop.connection.JDBCStatement;
 
 public class Dictionary {
-	private static ArrayList<Word> data = JDBCStatement.getData();
-
 	public ArrayList<Word> getData() {
-		return data;
+		return JDBCStatement.getData();
+	}
+	
+	public ArrayList<String> getRecent(){
+		return JDBCStatement.getRecent();
+	}
+	
+	public ArrayList<String> getMark(){
+		return JDBCStatement.getStarred();
 	}
 }
